@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <title>TikTok Win Controller v7.10 Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 16px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #020617;
+      color: #e5e7eb;
+    }
+    h1 { font-size: 20px; margin-bottom: 4px; }
+    h2 {
+      font-size: 13px;
+      margin-top: 16px;
+      margin-bottom: 8px;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+    .card {
+      border-radius: 12px;
+      background: #020617;
+      box-shadow: 0 0 0 1px #1f2937, 0 18px 40px rgba(15,23,42,0.8);
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    label { font-size: 12px; color: #9ca3af; }
+    input, button, textarea {
+      font-family: inherit;
+      font-size: 13px;
+    }
+    input[type="number"],
+    input[type="text"],
+    input[type="color"] {
+      background: #020617;
+      border-radius: 8px;
+      border: 1px solid #374151;
+      padding: 6px 8px;
+      color: #e5e7eb;
+      min-width: 0;
+    }
+    input[type="color"] {
+      padding: 0;
+      width: 50px;
+      height: 30px;
+    }
+    button {
+      border-radius: 999px;
+      border: none;
+      padding: 6px 12px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: white;
+      font-weight: 600;
+    }
+    button.secondary {
+      background: #111827;
+      border: 1px solid #374151;
+      color: #e5e7eb;
+    }
+    button.danger {
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+    }
+    button.small { font-size: 12px; padding: 4px 10px; }
+    #scoreBig {
+      font-size: 32px;
+      font-weight: 700;
+      text-align: center;
+      margin: 4px 0 8px;
+      letter-spacing: 0.08em;
+      color: #e5e7eb;
+    }
+    code {
+      background: #020617;
+      padding: 2px 4px;
+      border-radius: 6px;
+      border: 1px solid #1f2937;
+      font-size: 11px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 90px;
+      resize: vertical;
+      background: #020617;
+      border-radius: 8px;
+      border: 1px solid #1f2937;
+      padding: 6px 8px;
+      color: #e5e7eb;
+      font-size: 12px;
+    }
+    .hint {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <h1>TikTok Win Controller v7.10 Pro</h1>
+  <div style="font-size:12px;color:#9ca3af;margin-bottom:8px;">
+    Win Counter + Overlay + Donation + Gift + Webhook + Custom Font + Negative Wins + Hotkeys + Global Hotkeys + Streamlabs
+  </div>
+
+  <!-- Win / Goal -->
+  <div class="card">
+    <h2>Win / Goal</h2>
+    <div id="scoreBig">0 / 10</div>
+    <div class="row" style="justify-content:center; margin-bottom:6px;">
+      <button class="small" onclick="adjust(-5)">-5</button>
+      <button class="small" onclick="adjust(-1)">-1</button>
+      <button class="small" onclick="adjust(1)">+1</button>
+      <button class="small" onclick="adjust(5)">+5</button>
+      <button class="small danger" onclick="resetWins()">รีเซ็ต</button>
+    </div>
+    <div class="hint">
+      คีย์ลัดในหน้าต่างนี้: ArrowUp = +1, ArrowDown = -1, ArrowRight = +5, ArrowLeft = -5<br>
+      คีย์ลัดแบบ Global (ใช้ได้แม้อยู่ในเกม / TikTok Studio): Ctrl+Alt+Up/Down/Right/Left
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <div>
+        <label>Current</label><br>
+        <input type="number" id="currentInput" style="width:100px" onchange="applyManual()">
+      </div>
+      <div>
+        <label>Goal</label><br>
+        <input type="number" id="goalInput" style="width:100px" onchange="applyManual()">
+      </div>
+    </div>
+  </div>
+
+  <!-- Donation Config -->
+  <div class="card">
+    <h2>Donation → Win</h2>
+    <div class="hint">
+      Endpoint (Webhook โดเนต HTTP): <code>POST http://127.0.0.1:3001/api/donate/apply</code>
+    </div>
+    <div class="row" style="margin-top:4px;">
+      <input type="text" id="donateUrl" readonly style="flex:1; min-width:0;" value="http://127.0.0.1:3001/api/donate/apply">
+      <button class="small" onclick="copyDonateUrl()">Copy</button>
+    </div>
+    <div class="hint">
+      JSON ตัวอย่างทดสอบ: <code>{ "amount": 20, "message": "บวก ขอ + หน่อย" }</code>
+    </div>
+
+    <div style="margin-top:10px; font-size:12px; font-weight:600;">ตั้งค่าสูตรโดเนต</div>
+    <div class="row" style="margin-top:4px;">
+      <div>
+        <label>ขั้นต่ำ (บาท) ที่นับเป็น win</label><br>
+        <input type="number" id="dnMinAmount" style="width:140px;">
+      </div>
+      <div>
+        <label>กี่บาท = 1 win</label><br>
+        <input type="number" id="dnBahtPerWin" style="width:140px;">
+      </div>
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <div>
+        <label>คำฝั่ง "บวก" (คั่นด้วย ,)</label><br>
+        <input type="text" id="dnKwPlus" style="width:220px;">
+      </div>
+      <div>
+        <label>คำฝั่ง "ลบ" (คั่นด้วย ,)</label><br>
+        <input type="text" id="dnKwMinus" style="width:220px;">
+      </div>
+    </div>
+
+    <div style="margin-top:12px; font-size:12px; font-weight:600;">Streamlabs Socket Token</div>
+    <div class="hint">
+      วาง <code>Socket API Token</code> จาก Streamlabs ตรงนี้ โปรแกรมจะเชื่อมต่ออัตโนมัติ และเอาโดเนตจาก Streamlabs มาแปลงเป็น win ตามสูตรด้านบน
+    </div>
+    <div class="row" style="margin-top:4px;">
+      <input type="text" id="dnStreamlabsToken" placeholder="streamlabs socket token" style="flex:1; min-width:0;">
+      <button class="small" onclick="saveDonateConfig()">บันทึกโดเนต + Token</button>
+    </div>
+  </div>
+
+  <!-- Overlay + Font -->
+  <div class="card">
+    <h2>Overlay + Font</h2>
+    <div style="font-size:12px;margin-bottom:4px;">
+      ใช้ลิงก์นี้ใน TikTok Studio (Browser Source)
+    </div>
+    <div class="row">
+      <code id="overlayUrl">http://127.0.0.1:3001/overlay.html</code>
+      <button class="small" onclick="copyOverlay()">Copy</button>
+    </div>
+    <div class="hint">
+      ถ้า TikTok Studio ไม่รับ <code>localhost</code> ให้ใช้ <code>127.0.0.1</code>
+    </div>
+
+    <div style="margin-top:10px; font-size:12px; font-weight:600;">ปรับฟอนต์ของ Overlay</div>
+    <div class="row" style="margin-top:6px;">
+      <div>
+        <label>ขนาดฟอนต์ (px)</label><br>
+        <input type="number" id="ovFontSize" value="96" style="width:120px;">
+      </div>
+      <div>
+        <label>ความหนาขอบ (Outline)</label><br>
+        <input type="number" id="ovOutline" value="8" style="width:120px;">
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:6px;">
+      <div>
+        <label>สี Win &gt; 0</label><br>
+        <input type="color" id="ovColorPositive" value="#22c55e">
+      </div>
+      <div>
+        <label>สี Win &lt; 0</label><br>
+        <input type="color" id="ovColorNegative" value="#f97373">
+      </div>
+      <div>
+        <label>สี Win = 0</label><br>
+        <input type="color" id="ovColorZero" value="#ffffff">
+      </div>
+      <div>
+        <label>สี Goal</label><br>
+        <input type="color" id="ovColorGoal" value="#ffffff">
+      </div>
+      <div style="align-self:flex-end;">
+        <button class="small" onclick="saveOverlayConfig()">บันทึกฟอนต์ Overlay</button>
+      </div>
+    </div>
+
+    <div class="hint">
+      ฟอนต์จะใช้จากไฟล์ <code>fonts/custom.ttf</code> (เอาไฟล์ .ttf มาตั้งชื่อว่า custom.ttf)
+    </div>
+  </div>
+
+  <!-- Webhook Preset -->
+  <div class="card">
+    <h2>Webhook Preset (Tikfinity Tiger)</h2>
+    <div class="hint">
+      ใส่จำนวน win ต่อ 1 Trigger แล้วจะได้ลิงก์ บวก/ลบ win สำหรับใช้ใน Tiger Webhook (POST)
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <div>
+        <label>จำนวน win ต่อ 1 Trigger</label><br>
+        <input type="number" id="whDelta" value="1" style="width:120px;">
+      </div>
+      <div>
+        <button class="small" onclick="updateWebhookUrls()">สร้างลิงก์</button>
+      </div>
+    </div>
+    <div style="margin-top:8px;">
+      <label>ลิงก์สำหรับ บวก win</label>
+      <div class="row" style="margin-top:4px;">
+        <input type="text" id="whUrlPlus" readonly style="flex:1; min-width:0;">
+        <button class="small" onclick="copyWebhook('plus')">Copy</button>
+      </div>
+    </div>
+    <div style="margin-top:8px;">
+      <label>ลิงก์สำหรับ ลบ win</label>
+      <div class="row" style="margin-top:4px;">
+        <input type="text" id="whUrlMinus" readonly style="flex:1; min-width:0;">
+        <button class="small" onclick="copyWebhook('minus')">Copy</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gift Mapping -->
+  <div class="card">
+    <h2>Tikfinity Gift → Win</h2>
+    <div class="hint">
+      ใส่ทีละบรรทัด: <code>ชื่อของขวัญ,win ต่อ 1 ชิ้น</code><br>
+      เช่น <code>Rose,1</code>, <code>Rocket,5</code>, <code>BadGift,-3</code><br>
+      ใช้ร่วมกับ endpoint <code>/api/tikfinity</code>
+    </div>
+    <textarea id="giftConfig" placeholder="Rose,1&#10;Rocket,5&#10;BadGift,-3"></textarea>
+    <div class="row" style="margin-top:6px;">
+      <button class="small" onclick="saveGiftConfig()">บันทึก Gift Mapping</button>
+    </div>
+  </div>
+
+  <!-- Log -->
+  <div class="card">
+    <h2>Log</h2>
+    <textarea id="log" readonly></textarea>
+  </div>
+
+<script>
+let state = { current: 0, goal: 10 };
+let overlayConfig = {
+  fontSize: 96,
+  outline: 8,
+  colorPositive: "#22c55e",
+  colorNegative: "#f97373",
+  colorZero: "#ffffff",
+  colorGoal: "#ffffff"
+};
+let donateConfig = {
+  minAmount: 1,
+  bahtPerWin: 1,
+  kwPlus: "บวก,+,plus,add",
+  kwMinus: "ลบ,-,minus,remove",
+  streamlabsToken: ""
+};
+
+function log(msg) {
+  const box = document.getElementById('log');
+  box.value += '[' + new Date().toLocaleTimeString() + '] ' + msg + '\\n';
+  box.scrollTop = box.scrollHeight;
+}
+
+// ---- STATE ----
+async function fetchState() {
+  try {
+    const res = await fetch('/api/state');
+    if (!res.ok) return;
+    const data = await res.json();
+    state = data;
+    renderState();
+  } catch (e) {}
+}
+
+function renderState() {
+  document.getElementById('scoreBig').textContent = state.current + ' / ' + state.goal;
+  document.getElementById('currentInput').value = state.current;
+  document.getElementById('goalInput').value = state.goal;
+}
+
+async function updateState() {
+  try {
+    await fetch('/api/state', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(state)
+    });
+  } catch (e) {
+    log('update state error: ' + e);
+  }
+}
+
+function adjust(delta) {
+  state.current = state.current + delta; // allow negative
+  renderState();
+  updateState();
+}
+
+function resetWins() {
+  if (!confirm('รีเซ็ต win ทั้งหมดเป็น 0 ?')) return;
+  state.current = 0;
+  renderState();
+  updateState();
+}
+
+function applyManual() {
+  const cur = parseInt(document.getElementById('currentInput').value || '0', 10);
+  const goal = parseInt(document.getElementById('goalInput').value || '1', 10);
+  state.current = cur;
+  state.goal = Math.max(1, goal);
+  renderState();
+  updateState();
+}
+
+// ---- HOTKEYS (เฉพาะหน้าต่างนี้) ----
+window.addEventListener('keydown', (e) => {
+  const tag = (e.target && e.target.tagName) ? e.target.tagName.toUpperCase() : '';
+  if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
+  switch (e.code) {
+    case 'ArrowUp':
+      e.preventDefault();
+      adjust(1);
+      break;
+    case 'ArrowDown':
+      e.preventDefault();
+      adjust(-1);
+      break;
+    case 'ArrowRight':
+      e.preventDefault();
+      adjust(5);
+      break;
+    case 'ArrowLeft':
+      e.preventDefault();
+      adjust(-5);
+      break;
+  }
+});
+
+// ---- OVERLAY ----
+function copyOverlay() {
+  const url = document.getElementById('overlayUrl').textContent;
+  navigator.clipboard.writeText(url).then(() => {
+    log('คัดลอก overlay แล้ว: ' + url);
+  }).catch(err => {
+    log('คัดลอก overlay ไม่สำเร็จ: ' + err);
+  });
+}
+
+async function loadOverlayConfig() {
+  try {
+    const res = await fetch('/api/overlay-config');
+    if (!res.ok) return;
+    const data = await res.json();
+    overlayConfig = data;
+    document.getElementById('ovFontSize').value = data.fontSize ?? 96;
+    document.getElementById('ovOutline').value  = data.outline  ?? 8;
+    document.getElementById('ovColorPositive').value = data.colorPositive ?? "#22c55e";
+    document.getElementById('ovColorNegative').value = data.colorNegative ?? "#f97373";
+    document.getElementById('ovColorZero').value     = data.colorZero     ?? "#ffffff";
+    document.getElementById('ovColorGoal').value     = data.colorGoal     ?? "#ffffff";
+  } catch (e) {
+    log('โหลดตั้งค่า Overlay ไม่สำเร็จ: ' + e);
+  }
+}
+
+async function saveOverlayConfig() {
+  try {
+    const payload = {
+      fontSize: parseFloat(document.getElementById('ovFontSize').value || '96'),
+      outline:  parseFloat(document.getElementById('ovOutline').value  || '8'),
+      colorPositive: document.getElementById('ovColorPositive').value || "#22c55e",
+      colorNegative: document.getElementById('ovColorNegative').value || "#f97373",
+      colorZero:     document.getElementById('ovColorZero').value     || "#ffffff",
+      colorGoal:     document.getElementById('ovColorGoal').value     || "#ffffff"
+    };
+    const res = await fetch('/api/overlay-config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      log('บันทึกตั้งค่า Overlay ไม่สำเร็จ: ' + err);
+      return;
+    }
+    log('บันทึกตั้งค่า Overlay แล้ว');
+  } catch (e) {
+    log('บันทึกตั้งค่า Overlay ไม่สำเร็จ: ' + e);
+  }
+}
+
+// ---- Webhook Preset ----
+function updateWebhookUrls() {
+  let d = parseInt(document.getElementById('whDelta').value || '1', 10);
+  if (!Number.isFinite(d) || d <= 0) d = 1;
+  document.getElementById('whDelta').value = d;
+  const base = 'http://127.0.0.1:3001/api/tikfinity/delta';
+  document.getElementById('whUrlPlus').value = base + '/' + d;
+  document.getElementById('whUrlMinus').value = base + '/' + (-d);
+}
+
+function copyWebhook(which) {
+  const el = which === 'plus'
+    ? document.getElementById('whUrlPlus')
+    : document.getElementById('whUrlMinus');
+  const url = el.value || '';
+  if (!url) { log('ยังไม่มีลิงก์ให้คัดลอก'); return; }
+  navigator.clipboard.writeText(url).then(() => {
+    log('คัดลอก webhook แล้ว: ' + url);
+  }).catch(err => {
+    log('คัดลอก webhook ไม่สำเร็จ: ' + err);
+  });
+}
+
+// ---- Gift Mapping ----
+async function loadGiftConfig() {
+  try {
+    const res = await fetch('/api/gift-config');
+    if (!res.ok) return;
+    const data = await res.json();
+    const lines = Object.entries(data).map(([name, per]) => `${name},${per}`);
+    document.getElementById('giftConfig').value = lines.join('\\n');
+  } catch (e) {
+    log('โหลด Gift Mapping ไม่สำเร็จ: ' + e);
+  }
+}
+
+async function saveGiftConfig() {
+  try {
+    const text = document.getElementById('giftConfig').value || '';
+    const map = {};
+    text.split(/\\r?\\n/).forEach(line => {
+      const t = line.trim();
+      if (!t) return;
+      const parts = t.split(',');
+      if (parts.length < 2) return;
+      const name = parts[0].trim();
+      const val = parseFloat(parts[1].trim());
+      if (!name || !Number.isFinite(val)) return;
+      map[name] = val;
+    });
+    const res = await fetch('/api/gift-config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(map)
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      log('บันทึก Gift Mapping ไม่สำเร็จ: ' + err);
+      return;
+    }
+    log('บันทึก Gift Mapping แล้ว');
+  } catch (e) {
+    log('บันทึก Gift Mapping ไม่สำเร็จ: ' + e);
+  }
+}
+
+// ---- Donate Config ----
+async function loadDonateConfig() {
+  try {
+    const res = await fetch('/api/donate-config');
+    if (!res.ok) return;
+    const data = await res.json();
+    donateConfig = data;
+    document.getElementById('dnMinAmount').value = data.minAmount ?? 1;
+    document.getElementById('dnBahtPerWin').value = data.bahtPerWin ?? 1;
+    document.getElementById('dnKwPlus').value = data.kwPlus ?? "บวก,+,plus,add";
+    document.getElementById('dnKwMinus').value = data.kwMinus ?? "ลบ,-,minus,remove";
+    document.getElementById('dnStreamlabsToken').value = data.streamlabsToken ?? "";
+  } catch (e) {
+    log('โหลดตั้งค่าโดเนตไม่สำเร็จ: ' + e);
+  }
+}
+
+async function saveDonateConfig() {
+  try {
+    const payload = {
+      minAmount: parseFloat(document.getElementById('dnMinAmount').value || '1'),
+      bahtPerWin: parseFloat(document.getElementById('dnBahtPerWin').value || '1'),
+      kwPlus: document.getElementById('dnKwPlus').value || "บวก,+,plus,add",
+      kwMinus: document.getElementById('dnKwMinus').value || "ลบ,-,minus,remove",
+      streamlabsToken: document.getElementById('dnStreamlabsToken').value || ""
+    };
+    const res = await fetch('/api/donate-config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      log('บันทึกตั้งค่าโดเนตไม่สำเร็จ: ' + err);
+      return;
+    }
+    log('บันทึกตั้งค่าโดเนต + Streamlabs Token แล้ว');
+  } catch (e) {
+    log('บันทึกตั้งค่าโดเนตไม่สำเร็จ: ' + e);
+  }
+}
+
+// ---- Donate URL copy ----
+function copyDonateUrl() {
+  const url = document.getElementById('donateUrl').value || '';
+  if (!url) return;
+  navigator.clipboard.writeText(url).then(() => {
+    log('คัดลอก Donate Webhook แล้ว: ' + url);
+  }).catch(err => {
+    log('คัดลอก Donate Webhook ไม่สำเร็จ: ' + err);
+  });
+}
+
+// ---- INIT ----
+window.addEventListener('load', () => {
+  fetchState();
+  setInterval(fetchState, 1000);
+  loadOverlayConfig();
+  loadGiftConfig();
+  loadDonateConfig();
+  updateWebhookUrls();
+});
+</script>
+</body>
+</html>

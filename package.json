@@ -1,0 +1,47 @@
+{
+  "name": "tiktok-win-counter-online",
+  "version": "8.0.0",
+  "description": "TikTok Win Counter Pro Online Version (Port 3005)",
+  "main": "main.js",
+  "author": "Tlezawer",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Tlezawer/tiktok-win-counter-online.git"
+  },
+  "build": {
+    "appId": "com.tlezawer.wincounter.online",
+    "productName": "TikTok Win Counter Pro Online",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Tlezawer",
+        "repo": "tiktok-win-counter-online"
+      }
+    ],
+    "win": {
+      "target": ["nsis"],
+      "icon": "icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    },
+    "directories": {
+      "output": "dist"
+    }
+  },
+  "dependencies": {
+    "electron-updater": "^6.1.7",
+    "express": "4.19.2",
+    "socket.io-client": "4.8.1"
+  },
+  "devDependencies": {
+    "electron": "30.0.0",
+    "electron-builder": "^24.13.3"
+  }
+}
