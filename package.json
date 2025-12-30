@@ -23,7 +23,9 @@
       }
     ],
     "win": {
-      "target": ["nsis"],
+      "target": [
+        "nsis"
+      ],
       "icon": "icon.ico"
     },
     "nsis": {
@@ -36,7 +38,7 @@
     }
   },
   "dependencies": {
-    "electron-updater": "^6.1.7",
+    "electron-updater": "^6.6.2",
     "express": "4.19.2",
     "socket.io-client": "4.8.1"
   },
