@@ -42,11 +42,23 @@ app.whenReady().then(() => {
   createWindow();
   autoUpdater.checkForUpdatesAndNotify();
 
-  // ปุ่มลัดใหม่ (Ctrl+Shift+ลูกศร) เพื่อไม่ให้ซ้ำกับโปรแกรมเดิม
-  globalShortcut.register("Ctrl+Shift+Up", () => sendDelta(1));
-  globalShortcut.register("Ctrl+Shift+Down", () => sendDelta(-1));
-  globalShortcut.register("Ctrl+Shift+Right", () => sendDelta(5));
-  globalShortcut.register("Ctrl+Shift+Left", () => sendDelta(-5));
+  // ลงทะเบียนปุ่มลัด Global (กดจากหน้าต่างไหนก็ได้)
+  // ผมตั้งค่าเป็น Ctrl + Shift + Up (ลูกศรขึ้น) เพื่อบวก 1
+  globalShortcut.register("Control+Shift+Up", () => {
+    console.log("Hotkeys: Adding 1 point");
+    sendDelta(1);
+  });
+
+  // Ctrl + Shift + Down (ลูกศรลง) เพื่อลบ 1
+  globalShortcut.register("Control+Shift+Down", () => {
+    console.log("Hotkeys: Subtracting 1 point");
+    sendDelta(-1);
+  });
+
+  // ปุ่ม Reset (ถ้าต้องการ) เช่น Ctrl + Shift + R
+  globalShortcut.register("Control+Shift+R", () => {
+    // ใส่โค้ดรีเซ็ตที่นี่ถ้ามี
+  });
 });
 
 app.on("window-all-closed", () => { if (process.platform !== "darwin") app.quit(); });
